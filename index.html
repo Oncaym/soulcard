@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>InnerCollapse | Soul Card Draw</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      background: #6366f1;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #1f2937;
+      padding: 1.5rem;
+      border-radius: 1.5rem;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+    }
+    .rarity {
+      color: #facc15;
+      font-style: italic;
+    }
+    .vector {
+      color: #6ee7b7;
+    }
+    .note {
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎴 Draw a Soul Card</h1>
+  <button onclick="drawCard()">Draw Now</button>
+  <div id="card-root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script>
+    const e = React.createElement;
+
+    function generateCollapseState(Ψ) {
+      const [α, β, γ, δ, ε] = Ψ;
+      const sum = α + β + γ + δ + ε;
+      const shape = {
+        memory: α / sum,
+        emotion: β / sum,
+        language: γ / sum,
+        body: δ / sum,
+        social: ε / sum
+      };
+
+      const high = Object.entries(shape).filter(([_, v]) => v > 0.25).map(([k]) => k);
+      const low = Object.entries(shape).filter(([_, v]) => v < 0.15).map(([k]) => k);
+
+      const poeticStates = [
+        {
+          condition: (α > 0.8 && β > 0.8 && γ < 0.3),
+          name: "Dream Fragments",
+          en: "Memory and emotion flood the space. You breathe outside language."
+        },
+        {
+          condition: (γ > 0.8 && ε > 0.8 && δ < 0.2),
+          name: "Reflective Mask",
+          en: "You reflect yourself through language and society. The body has left."
+        },
+        {
+          condition: (β > 0.6 && γ > 0.6 && ε > 0.6),
+          name: "Inner Stage",
+          en: "Emotion, language, and roles weave together — life becomes theater."
+        }
+      ];
+
+      const poetic = poeticStates.find(p => p.condition);
+
+      return {
+        name: poetic?.name || `${high[0] || 'undefined'}-${low[0] || 'undefined'}`,
+        description_en: poetic?.en || `You are in a self-state dominated by ${high.join(', ')}, while ${low.join(', ')} nearly disappears.`,
+        vector: Ψ.map(v => Number(v.toFixed(2)))
+      };
+    }
+
+    function randomVector() {
+      return Array.from({ length: 5 }, () => Math.random());
+    }
+
+    function determineRarity(Ψ) {
+      const extremes = Ψ.filter(v => v < 0.1 || v > 0.9).length;
+      if (extremes >= 4) return '🌌 Legendary';
+      if (extremes >= 3) return '💎 Rare';
+      if (extremes >= 2) return '✨ Uncommon';
+      return '🔹 Common';
+    }
+
+    function drawCard() {
+      const Ψ = randomVector();
+      const state = generateCollapseState(Ψ);
+      const rarity = determineRarity(Ψ);
+      const time = new Date().toLocaleString();
+
+      ReactDOM.render(
+        e('div', { className: 'card' }, [
+          e('h2', { key: 'name' }, `🧬 ${state.name}`),
+          e('p', { className: 'rarity', key: 'rarity' }, rarity),
+          e('p', { className: 'note', key: 'time' }, time),
+          e('p', { className: 'vector', key: 'vec' }, `[${state.vector.join(', ')}]`),
+          e('p', { key: 'desc' }, state.description_en)
+        ]),
+        document.getElementById('card-root')
+      );
+    }
+  </script>
+</body>
+</html>
